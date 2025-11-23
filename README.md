@@ -17,6 +17,21 @@ npx sv create
 npx sv create my-app
 ```
 
+## Vinculando o projeto ao repositório
+
+Crie o repositório vazio (includive sem o REAME.md para não dar comflito) e siga os passos a abaixo para vincular o projeto ao repositório.
+
+Antes de iniciar os comandos do `git`, se não não houver, crie o arquivo `.gitignore` e liste as pastas/arquivos que não deverão ser enviados para o repositório, incluindo os env e .env.
+
+```sh
+git init   # inicialize o git no repositório
+git add .  # adicionar todos os arquivos no commit
+git commit -m 'First commit'
+git branch -M main
+git remote add origin copiar-SSH-do-repositório
+git push -u origin main
+```
+
 ## Developing
 
 Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
