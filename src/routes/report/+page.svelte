@@ -5,7 +5,7 @@
 </script>
 
 <div class="space-y-6">
-  <h1 class="text-3xl font-bold">$t.report.pageTitle = {$t.report.pageTitle}</h1>
+  <h1 class="text-3xl font-bold">{$t.report.pageTitle}</h1>
 
   <form method="GET" class="bg-gray-800 p-4 rounded-lg shadow-lg flex flex-wrap gap-4 items-end">
     <div class="flex-1 min-w-[150px]">

@@ -53,10 +53,10 @@ export type Translations = {
   };
   status: {
     new: string;
-    // altered: string;
     modified: string;
     ignored: string;
     published: string;
+    updating: string;
   };
 };
 
@@ -101,6 +101,7 @@ const ptBR: Translations = {
     modified: "Alterada",
     ignored: "Ignorada",
     published: "Publicada",
+    updating: "Atualizando..."
   }
 };
 

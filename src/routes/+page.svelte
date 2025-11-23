@@ -2,6 +2,7 @@
   import { statusList, centrosNucleosList } from '$lib/tipos';
   import { enhance } from '$app/forms';
   import { t } from '$lib/i18n'; // Importar o store
+  import StatusActionButton from '$lib/StatusActionButton.svelte';
 
   // 'data' vem do +page.server.ts
   export let data;
@@ -11,7 +12,7 @@
     switch (status) {
       case $t.status.new:
         return 'bg-blue-600 text-blue-100';
-      case $t.status.altered:
+      case $t.status.modified:
         return 'bg-yellow-600 text-yellow-100';
       case $t.status.ignored:
         return 'bg-gray-600 text-gray-100';
@@ -21,6 +22,32 @@
         return 'bg-gray-500 text-white';
     }
   }
+
+// cópia local dos scraps para permitir mutação no cliente
+let scraps = data.scraps.map((s) => ({ ...s, updating: false }));
+
+// guarda a referência do último `data.scraps` sincronizado.
+let _lastDataScraps = data.scraps;
+
+// sincroniza a cópia local apenas quando `data.scraps` for um array novo (por referência).
+// assim evita sobrescrever mudanças locais (status/updating) feitas pelo cliente.
+$: if (data?.scraps && data.scraps !== _lastDataScraps) {
+  _lastDataScraps = data.scraps;
+  const updatingMap = new Map(scraps.map((s) => [s.uuid, s.updating]));
+  scraps = data.scraps.map((s) => ({ ...s, updating: updatingMap.get(s.uuid) ?? false }));
+}
+
+function setUpdating(uuid: string, updating: boolean) {
+  const idx = scraps.findIndex((s) => s.uuid === uuid);
+  if (idx === -1) return;
+  scraps[idx] = { ...scraps[idx], updating };
+}
+
+function setStatus(uuid: string, newStatus: string) {
+  const idx = scraps.findIndex((s) => s.uuid === uuid);
+  if (idx === -1) return;
+  scraps[idx] = { ...scraps[idx], status: newStatus as any };
+}
 </script>
 
 <div class="space-y-6">
@@ -73,8 +100,8 @@
   </form>
 
   <div class="space-y-4">
-    {#if data.scraps.length > 0}
-      {#each data.scraps as scrap (scrap.uuid)}
+    {#if scraps.length > 0}
+      {#each scraps as scrap (scrap.uuid)}
         <article class="bg-gray-800 shadow-lg rounded-lg overflow-hidden flex">
           <div class="p-5 flex-1">
             <div class="flex justify-between items-center mb-2">
@@ -104,29 +131,41 @@
             </div>
           </div>
 
-          <div class="bg-gray-700 p-4 flex flex-col justify-center space-y-3">
-            <form action="?/updateStatus" method="POST" use:enhance>
-              <input type="hidden" name="uuid" value={scrap.uuid} />
-              <input type="hidden" name="newStatus" value="{$t.status.ignored}" />
-              <button
-                type="submit"
-                class="w-full px-3 py-2 text-sm font-medium text-white bg-gray-600 rounded-md hover:bg-gray-500"
-              >
-                {$t.dashboard.cardIgnoreButton}
-              </button>
-            </form>
+            <div class="bg-gray-700 p-4 flex flex-col justify-center space-y-3">
+              <form action="?/updateStatus" method="POST">
+                <input type="hidden" name="uuid" value={scrap.uuid} />
+                <input type="hidden" name="newStatus" value={$t.status.ignored} />
 
-            <form action="?/updateStatus" method="POST" use:enhance>
-              <input type="hidden" name="uuid" value={scrap.uuid} />
-              <input type="hidden" name="newStatus" value="{$t.status.published}" />
-              <button
-                type="submit"
-                class="w-full px-3 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-500"
-              >
-                {$t.dashboard.cardPublishButton}
-              </button>
-            </form>
-          </div>
+                <StatusActionButton
+                  uuid={scrap.uuid}
+                  status={scrap.status}
+                  targetStatus={$t.status.ignored}
+                  label={$t.dashboard.cardIgnoreButton}
+                  btnClass="w-full px-3 py-2 text-sm font-medium text-white bg-gray-600 rounded-md hover:bg-gray-500"
+                  updatingLabel={$t.status.updating}
+                  on:update-start={(e) => setUpdating(e.detail.uuid, true)}
+                  on:updated={(e) => setStatus(e.detail.uuid, e.detail.newStatus)}
+                  on:update-finish={(e) => setUpdating(e.detail.uuid, false)}
+                />
+              </form>
+
+              <form action="?/updateStatus" method="POST">
+                <input type="hidden" name="uuid" value={scrap.uuid} />
+                <input type="hidden" name="newStatus" value={$t.status.published} />
+
+                <StatusActionButton
+                  uuid={scrap.uuid}
+                  status={scrap.status}
+                  targetStatus={$t.status.published}
+                  label={$t.dashboard.cardPublishButton}
+                  btnClass="w-full px-3 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-500"
+                  updatingLabel={$t.status.updating}
+                  on:update-start={(e) => setUpdating(e.detail.uuid, true)}
+                  on:updated={(e) => setStatus(e.detail.uuid, e.detail.newStatus)}
+                  on:update-finish={(e) => setUpdating(e.detail.uuid, false)}
+                />
+              </form>
+            </div>
         </article>
       {/each}
     {:else}
