@@ -4,9 +4,12 @@
   export let data;   // 'data' vem do +page.server.ts
   import NewsModal from '$lib/NewsModal.svelte';
 
+  // Função para dar cor aos status (importada de util reutilizável)
+  import { getStatusClasses } from '$lib/getStatusClasses';
+
   let modalOpen = false;
   let modalScrap = null as any;
-  
+
   function openModal(s: any) {
     modalScrap = s;
     modalOpen = true;
@@ -15,6 +18,18 @@
   function closeModal(): void {
     modalOpen = false;
     modalScrap = null;
+  }
+
+  function setUpdating(uuid: string, updating: boolean) {
+    const idx = data.scraps.findIndex((s) => s.uuid === uuid);
+    if (idx === -1) return;
+    data.scraps[idx] = { ...data.scraps[idx], updating } as any;
+  }
+
+  function setStatus(uuid: string, newStatus: string) {
+    const idx = data.scraps.findIndex((s) => s.uuid === uuid);
+    if (idx === -1) return;
+    data.scraps[idx] = { ...data.scraps[idx], status: newStatus as any };
   }
 </script>
 
@@ -72,7 +87,10 @@
             <tr class="hover:bg-gray-700">
               <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-300">{scrap.source}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-white">{scrap.title}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{scrap.status}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300"><span
+                class="px-2 py-0.5 text-xs font-bold rounded-full {getStatusClasses(scrap.status)}"
+              >{scrap.status}</span>
+              </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400"
                 >{new Date(scrap.published_at).toLocaleDateString()}</td
               >
@@ -97,4 +115,11 @@
   </div>
 </div>
 
-<NewsModal open={modalOpen} scrap={modalScrap} on:close={closeModal} />
+  <NewsModal
+    open={modalOpen}
+    scrap={modalScrap}
+    on:close={closeModal}
+    on:update-start={(e: CustomEvent) => setUpdating(e.detail.uuid, true)}
+    on:updated={(e: CustomEvent) => setStatus(e.detail.uuid, e.detail.newStatus)}
+    on:update-finish={(e: CustomEvent) => setUpdating(e.detail.uuid, false)}
+  />

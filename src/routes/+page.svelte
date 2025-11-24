@@ -8,21 +8,8 @@
   // 'data' vem do +page.server.ts
   export let data;
 
-  // Função para dar cor aos status
-  function getStatusClasses(status: string) {
-    switch (status) {
-      case $t.status.new:
-        return 'bg-blue-600 text-blue-100';
-      case $t.status.modified:
-        return 'bg-yellow-600 text-yellow-100';
-      case $t.status.ignored:
-        return 'bg-gray-600 text-gray-100';
-      case $t.status.published:
-        return 'bg-green-600 text-green-100';
-      default:
-        return 'bg-gray-500 text-white';
-    }
-  }
+  // Função para dar cor aos status (importada de util reutilizável)
+  import { getStatusClasses } from '$lib/getStatusClasses';
 
 // cópia local dos scraps para permitir mutação no cliente
 let scraps = data.scraps.map((s) => ({ ...s, updating: false }));
@@ -197,5 +184,12 @@ function closeModal(): void {
       </div>
     {/if}
   </div>
-  <NewsModal open={modalOpen} scrap={modalScrap} on:close={closeModal} />
+  <NewsModal
+    open={modalOpen}
+    scrap={modalScrap}
+    on:close={closeModal}
+    on:update-start={(e: CustomEvent) => setUpdating(e.detail.uuid, true)}
+    on:updated={(e: CustomEvent) => setStatus(e.detail.uuid, e.detail.newStatus)}
+    on:update-finish={(e: CustomEvent) => setUpdating(e.detail.uuid, false)}
+  />
 </div>

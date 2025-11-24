@@ -1,6 +1,11 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
   import { t } from '$lib/i18n'; // Importa o store com as traduções
+  import StatusActionButton from '$lib/StatusActionButton.svelte';
+
+  // Função para dar cor aos status (importada de util reutilizável)
+  import { getStatusClasses } from '$lib/getStatusClasses';
+
   export let open: boolean = false;
   export let scrap: any = null;
   const dispatch = createEventDispatcher();
@@ -19,6 +24,12 @@
       return () => window.removeEventListener('keydown', onKey);
     }
   });
+
+  // forward events from internal StatusActionButton components
+  function forward(e: CustomEvent) {
+    // re-dispatch with same type and detail
+    dispatch(e.type, e.detail);
+  }
 </script>
 
 {#if open}
@@ -31,8 +42,8 @@
           <h2 class="text-lg font-bold text-white">{scrap?.title}</h2>
           <p class="text-xs text-gray-400">
             {scrap?.source} 
-            — {$t.tableLabels.published_at}: {new Date(scrap?.published_at).toLocaleString()}
-            — {$t.tableLabels.collected_at}: {new Date(scrap?.collected_at).toLocaleString()}
+            <span class="px-3">-</span> {$t.tableLabels.published_at}: {new Date(scrap?.published_at).toLocaleString()}
+            <span class="px-3">-</span> {$t.tableLabels.collected_at}: {new Date(scrap?.collected_at).toLocaleString()}
         </p>
         </div>
         <button class="ml-4 text-gray-300 hover:text-white" on:click={close} aria-label="{$t.modal.close}">✕</button>
@@ -48,8 +59,38 @@
         {/if}
       </div>
 
-      <div class="p-4 border-t border-gray-700 flex justify-end gap-2">
-        <button class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500" on:click={close}>{$t.modal.close}</button>
+      <div class="p-4 border-t border-gray-700 flex justify-between items-center">
+        <div class="text-sm text-gray-400"><span
+                class="px-4 py-2 font-bold rounded-full {getStatusClasses(scrap.status)}"
+              >{scrap.status}</span>
+        </div>
+        <div class="flex justify-end gap-2">
+          <StatusActionButton
+            uuid={scrap?.uuid}
+            status={scrap?.status}
+            targetStatus={$t.status.ignored}
+            label={$t.dashboard.cardIgnoreButton ?? 'Ignorar'}
+            btnClass="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500"
+            updatingLabel={$t.status.updating}
+            on:update-start={forward}
+            on:updated={forward}
+            on:update-finish={forward}
+          />
+
+          <StatusActionButton
+            uuid={scrap?.uuid}
+            status={scrap?.status}
+            targetStatus={$t.status.published}
+            label={$t.dashboard.cardPublishButton ?? 'Publicar'}
+            btnClass="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-500"
+            updatingLabel={$t.status.updating}
+            on:update-start={forward}
+            on:updated={forward}
+            on:update-finish={forward}
+          />
+          <span class="px-3">&nbsp;</span> 
+          <button class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500" on:click={close}>{$t.modal.close}</button>
+        </div>
       </div>
     </div>
   </div>
