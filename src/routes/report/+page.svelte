@@ -2,6 +2,20 @@
   import { statusList, centrosNucleosList } from '$lib/tipos';  // contem a deficição de listas e constantes, como a API_BASE_URL
   import { t } from '$lib/i18n'; // Importa o store com as traduções
   export let data;   // 'data' vem do +page.server.ts
+  import NewsModal from '$lib/NewsModal.svelte';
+
+  let modalOpen = false;
+  let modalScrap = null as any;
+  
+  function openModal(s: any) {
+    modalScrap = s;
+    modalOpen = true;
+  }
+
+  function closeModal(): void {
+    modalOpen = false;
+    modalScrap = null;
+  }
 </script>
 
 <div class="space-y-6">
@@ -49,6 +63,7 @@
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">{$t.report.tableHeaderTitle}</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">{$t.report.tableHeaderStatus}</th>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">{$t.report.tableHeaderDate}</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase">{$t.common.view}</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-700">
@@ -61,6 +76,15 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-400"
                 >{new Date(scrap.published_at).toLocaleDateString()}</td
               >
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                <button
+                  type="button"
+                  class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-500"
+                  on:click={() => openModal(scrap)}
+                >
+                  {$t.common.view}
+                </button>
+              </td>
             </tr>
           {/each}
         {:else}
@@ -72,3 +96,5 @@
     </table>
   </div>
 </div>
+
+<NewsModal open={modalOpen} scrap={modalScrap} on:close={closeModal} />

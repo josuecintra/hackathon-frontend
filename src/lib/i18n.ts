@@ -25,6 +25,7 @@ export type Translations = {
   common: {
     all: string;
     apiError: string;
+    view: string;
   };
   dashboard: {
     filterTitle: string;
@@ -58,6 +59,21 @@ export type Translations = {
     published: string;
     updating: string;
   };
+  modal: {
+    close: string;
+    noContent: string;
+  };
+  tableLabels: {
+    uuid: string;
+    source: string;
+    title: string;
+    abstract: string;
+    url_source: string;
+    hash: string;
+    published_at: string;
+    collected_at: string;
+    status: string;
+  };
 };
 
 // 2. Criando o objeto de textos (vamos usar o pt-BR como padrão)
@@ -69,7 +85,8 @@ const ptBR: Translations = {
   },
   common: {
     all: 'Todos',
-    apiError: 'Erro da API.'
+    apiError: 'Erro da API.',
+    view: 'Ver'
   },
   dashboard: {
     filterTitle: 'Filtros',
@@ -102,6 +119,21 @@ const ptBR: Translations = {
     ignored: "Ignorada",
     published: "Publicada",
     updating: "Atualizando..."
+  },
+  modal: {
+    close: "Fechar",
+    noContent: "Sem conteúdo"
+  },
+  tableLabels: {
+    uuid: 'ID do registro',
+    source: 'Centro ou Núcleo',
+    title: 'Título',
+    abstract: 'Resumo',
+    url_source: 'Link da notícia na fonte',
+    hash: 'Hash da notícia',
+    published_at: 'Publicado em',
+    collected_at: 'Coletado em',
+    status: 'Estatus'
   }
 };
 

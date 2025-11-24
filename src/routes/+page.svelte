@@ -3,6 +3,7 @@
   import { enhance } from '$app/forms';
   import { t } from '$lib/i18n'; // Importar o store
   import StatusActionButton from '$lib/StatusActionButton.svelte';
+  import NewsModal from '$lib/NewsModal.svelte';
 
   // 'data' vem do +page.server.ts
   export let data;
@@ -47,6 +48,20 @@ function setStatus(uuid: string, newStatus: string) {
   const idx = scraps.findIndex((s) => s.uuid === uuid);
   if (idx === -1) return;
   scraps[idx] = { ...scraps[idx], status: newStatus as any };
+}
+
+// modal para visualizar a notícia completa
+let modalOpen = false;
+let modalScrap = null as any;
+
+function openModal(s: any) {
+  modalScrap = s;
+  modalOpen = true;
+}
+
+function closeModal(): void {
+  modalOpen = false;
+  modalScrap = null;
 }
 </script>
 
@@ -132,6 +147,13 @@ function setStatus(uuid: string, newStatus: string) {
           </div>
 
             <div class="bg-gray-700 p-4 flex flex-col justify-center space-y-3">
+              <button
+                type="button"
+                class="w-full px-3 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-400"
+                on:click={() => openModal(scrap)}
+              >
+                {$t.common.view}
+              </button>
               <form action="?/updateStatus" method="POST">
                 <input type="hidden" name="uuid" value={scrap.uuid} />
                 <input type="hidden" name="newStatus" value={$t.status.ignored} />
@@ -175,4 +197,5 @@ function setStatus(uuid: string, newStatus: string) {
       </div>
     {/if}
   </div>
+  <NewsModal open={modalOpen} scrap={modalScrap} on:close={closeModal} />
 </div>
